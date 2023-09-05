@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
+using System.Web.Helpers;
 
 namespace E_Commerce.DAL
 {
@@ -117,6 +118,288 @@ namespace E_Commerce.DAL
                     return person;
                 }
                
+            }
+
+            public static bool CheckForDuplicates(string email)
+            {
+                SqlConnection sqlCon = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Customers Where Email = @Email", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@Email", email);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    int customerId = Convert.ToInt32(Cmnd.ExecuteScalar());
+                    sqlCon.Close();
+
+                    if (customerId > 0 )
+                    {
+                        return true;
+                    }
+
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            public static int GetNumberOfUsers()
+            {
+                SqlConnection sqlCon = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT COUNT(*) as UserCount FROM Customers;", sqlCon);
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    int customerId = Convert.ToInt32(Cmnd.ExecuteScalar());
+                    sqlCon.Close();
+
+                    if (customerId > 0)
+                    {
+                        return customerId;
+                    }
+
+                    else
+                    {
+                        return 0;
+                    }
+                }
+            }
+
+            public static void AddCategory(Category category)
+            {
+                SqlConnection sqlCon = null;
+                Customer person = new Customer();
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Categories (CategoryName) VALUES (@CategoryName); SELECT SCOPE_IDENTITY()", sqlCon);
+                    DecryptionHelper decryptionHelper = new DecryptionHelper();
+                    Cmnd.Parameters.AddWithValue("@CategoryName", category.CategoryName);
+                    //Cmnd.CommandType = System.Data.CommandType.Text;
+                    //Cmnd.ExecuteNonQuery();
+                    // Execute the INSERT statement and retrieve the generated customer ID
+                    int customerId = Convert.ToInt32(Cmnd.ExecuteScalar());
+                    sqlCon.Close();
+                }
+            }
+
+            public static List<Category> GetCategoryList()
+            {
+                SqlConnection sqlCon = null;
+                List<Category> categories = new List<Category>();
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Categories", sqlCon);
+                    //Cmnd.Parameters.AddWithValue("@CustomerId", customerId);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    SqlDataReader rdr = Cmnd.ExecuteReader();
+                    while (rdr.Read())
+                    {
+                        Category cat = new Category();
+                        cat.CategoryID = Convert.ToInt32(rdr["CategoryID"]);
+                        cat.CategoryName = Convert.ToString(rdr["CategoryName"]);
+                        categories.Add(cat);
+                    }
+
+                    sqlCon.Close();
+                }
+                return categories;
+            }
+
+            public static void AddProduct(Products product)
+            {
+                SqlConnection sqlCon = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    //SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Products (ProductName) VALUES (@ProductName); SELECT SCOPE_IDENTITY()", sqlCon);
+                    SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Products (ProductName, CategoryID, ProductDescription, Category) VALUES (@ProductName, @CategoryID, @ProductDescription, @Category); SELECT SCOPE_IDENTITY()", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@ProductName", product.ProductName);
+                    Cmnd.Parameters.AddWithValue("@CategoryID", product.CategoryID);
+                    Cmnd.Parameters.AddWithValue("@Category", GetCategoryName(product.CategoryID));
+                    Cmnd.Parameters.AddWithValue("@ProductDescription", product.ProductDescription);
+                    //Cmnd.CommandType = System.Data.CommandType.Text;
+                    //Cmnd.ExecuteNonQuery();
+                    // Execute the INSERT statement and retrieve the generated customer ID
+                    int productID = Convert.ToInt32(Cmnd.ExecuteScalar());
+
+                    // Create a new Inventory object with the generated ProductID and quantity
+                    Inventory newInventory = new Inventory
+                    {
+                        ProductID = productID, // Pass the generated ProductID
+                        ProductName = product.ProductName,
+                        Quantity = 50 // Set the initial quantity in inventory accordingly
+                    };
+
+                    // Call AddInventory to insert the inventory data
+                    AddInventory(newInventory);
+                    sqlCon.Close();
+                }
+            }
+
+            public static string GetCategoryName(int categoryID)
+            {
+                SqlConnection sqlCon = null;
+                string categoryName = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT CategoryName FROM dbo.Categories Where CategoryID = @CategoryID", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@CategoryID", categoryID);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    categoryName = Convert.ToString(Cmnd.ExecuteScalar());
+                    sqlCon.Close();
+
+                    if (categoryName != null)
+                    {
+                        return categoryName;
+                    }
+
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            public static List<Products> GetProductList()
+            {
+                SqlConnection sqlCon = null;
+                List<Products> productList = new List<Products>();
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Products", sqlCon);
+                    //Cmnd.Parameters.AddWithValue("@CustomerId", customerId);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    SqlDataReader rdr = Cmnd.ExecuteReader();
+                    while (rdr.Read())
+                    {
+                        Products products = new Products();
+                        products.CategoryID = Convert.ToInt32(rdr["CategoryID"]);
+                        products.ProductName = Convert.ToString(rdr["ProductName"]);
+                        products.ProductDescription = Convert.ToString(rdr["ProductDescription"]);
+                        products.ProductID = Convert.ToInt32(rdr["ProductID"]);
+                        products.Category = GetCategoryName(Convert.ToInt32(rdr["CategoryID"]));
+                        productList.Add(products);
+                    }
+
+                    sqlCon.Close();
+                }
+
+                return productList;
+            }
+
+            public static List<Inventory> GetInventoryList()
+            {
+                SqlConnection sqlCon = null;
+                List<Inventory> inventoryList = new List<Inventory>();
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Inventory", sqlCon);
+                    //Cmnd.Parameters.AddWithValue("@CustomerId", customerId);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    SqlDataReader rdr = Cmnd.ExecuteReader();
+                    while (rdr.Read())
+                    {
+                        Inventory inventory = new Inventory();
+                        inventory.InventoryID = Convert.ToInt32(rdr["InventoryID"]);
+                        inventory.ProductName = Convert.ToString(rdr["ProductName"]);
+                        inventory.ProductID = Convert.ToInt32(rdr["ProductID"]);
+                        inventory.Quantity = Convert.ToInt32(rdr["Quantity"]);
+                        inventory.Price = Convert.ToDecimal(rdr["Price"]);
+                        inventoryList.Add(inventory);
+                    }
+
+                    sqlCon.Close();
+                }
+
+                return inventoryList;
+            }
+
+            public static void AddInventory(Inventory inventory)
+            {
+                SqlConnection sqlCon = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    //SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Inventory (ProductName) VALUES (@ProductName); SELECT SCOPE_IDENTITY()", sqlCon);
+                    SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Inventory (ProductID, ProductName, Quantity, Price) VALUES (@ProductID, @ProductName, @Quantity, @Price); SELECT SCOPE_IDENTITY()", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@ProductName", inventory.ProductName);
+                    Cmnd.Parameters.AddWithValue("@ProductID", inventory.ProductID);
+                    Cmnd.Parameters.AddWithValue("@Quantity", inventory.Quantity);
+                    Cmnd.Parameters.AddWithValue("@Price", inventory.Price);
+                    //Cmnd.CommandType = System.Data.CommandType.Text;
+                    //Cmnd.ExecuteNonQuery();
+                    // Execute the INSERT statement and retrieve the generated customer ID
+                    int customerId = Convert.ToInt32(Cmnd.ExecuteScalar());
+                    sqlCon.Close();
+                }
+            }
+
+            public static Inventory GetCurrentInventory(int productID)
+            {
+                SqlConnection sqlCon = null;
+                //string categoryName = null;
+                Inventory currentInventory = new Inventory();  
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Inventory Where ProductID = @ProductID", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@ProductID", productID);
+
+                    using (var reader = Cmnd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Map the data from the database to the Inventory model
+                            currentInventory = new Inventory
+                            {
+                                InventoryID = Convert.ToInt32(reader["InventoryID"]),
+                                ProductID = Convert.ToInt32(reader["ProductID"]),
+                                ProductName = reader["ProductName"].ToString(),
+                                Quantity = Convert.ToInt32(reader["Quantity"]),
+                                Price = Convert.ToDecimal(reader["Price"])
+                                // Map other properties as needed
+                            };
+                        }
+                    }
+
+                    sqlCon.Close();
+
+                    return currentInventory;
+                }
+            }
+
+            public static int UpdateInventory(Inventory inventory)
+            {
+                SqlConnection sqlCon = null;
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    //SqlCommand Cmnd = new SqlCommand("INSERT INTO dbo.Inventory (ProductName) VALUES (@ProductName); SELECT SCOPE_IDENTITY()", sqlCon);
+                    SqlCommand Cmnd = new SqlCommand("UPDATE dbo.Inventory SET ProductName = @ProductName, Quantity = @Quantity, Price = @Price Where ProductID = @ProductID;", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@ProductName", inventory.ProductName);
+                    Cmnd.Parameters.AddWithValue("@ProductID", inventory.ProductID);
+                    Cmnd.Parameters.AddWithValue("@Quantity", inventory.Quantity);
+                    Cmnd.Parameters.AddWithValue("@Price", inventory.Price);
+                    //Cmnd.CommandType = System.Data.CommandType.Text;
+                    //Cmnd.ExecuteNonQuery();
+                    // Execute the INSERT statement and retrieve the generated customer ID
+                    int rowsAffected = Cmnd.ExecuteNonQuery();  
+                    sqlCon.Close();
+
+                    return rowsAffected;
+                }
             }
         }
     }

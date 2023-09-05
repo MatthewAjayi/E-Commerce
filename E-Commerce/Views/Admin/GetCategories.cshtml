@@ -1,0 +1,50 @@
+﻿@model IEnumerable<E_Commerce.Models.Category>
+
+
+@if (Model != null && Model.Count() > 0)
+{
+    {
+        ViewBag.Title = "Category List";
+        Layout = "~/Views/Shared/_Layout2.cshtml";
+    }
+
+    <h2>Category List</h2>
+
+    <p>
+        @Html.ActionLink("Create New Category", "Category")
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryName)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CategoryID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CategoryName)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.CategoryID }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.CategoryID }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.CategoryID })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+else { 
+
+    <h1>No Results Found</h1>
+}

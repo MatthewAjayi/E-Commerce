@@ -27,11 +27,18 @@ namespace E_Commerce.Controllers
                 loginModel.Password = encryptedPassword;
                 var loginUser = EStoreDBContext.EStoreDB.LoginUser(loginModel.UserName, loginModel.Password);
 
-                if(loginUser.Email != null)
+                if(loginUser.Email != null && loginUser.Email != "admin@gmail.com")
                 {
                     Session["Username"] = loginUser.Email;
                     Session["CustomerID"] = loginUser.CustomerID;
                     return RedirectToAction("Account", "Account");
+                }
+
+                else if (loginUser.Email != null && loginUser.Email == "admin@gmail.com")
+                {
+                    Session["Username"] = loginUser.Email;
+                    Session["CustomerID"] = loginUser.CustomerID;
+                    return RedirectToAction("Index", "Admin");
                 }
 
                 else

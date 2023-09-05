@@ -22,16 +22,26 @@ namespace E_Commerce.Controllers
             if(ModelState.IsValid)
             {
                 //Add it into the DB
-                var registeredCustomer = EStoreDBContext.EStoreDB.AddCustomer(customer);
-                Session["UserName"] = registeredCustomer.Email;
-                Session["FirstName"] = registeredCustomer.FirstName;
-                Session["CustomerID"] = registeredCustomer.CustomerID;
-                return RedirectToAction("Account", "Account");
-                //return View("Account", "Account", registeredCustomer);
+                //Check for duplicates
+                var duplicateExist = EStoreDBContext.EStoreDB.CheckForDuplicates(customer.Email);
+                if(duplicateExist)
+                {
+                    return View("Index");
+                }
+
+                else
+                {
+                    var registeredCustomer = EStoreDBContext.EStoreDB.AddCustomer(customer);
+                    Session["UserName"] = registeredCustomer.Email;
+                    Session["FirstName"] = registeredCustomer.FirstName;
+                    Session["CustomerID"] = registeredCustomer.CustomerID;
+                    return RedirectToAction("Account", "Account");
+                    //return View("Account", "Account", registeredCustomer);
+                }
+
             }
 
-            return View();
-            
+            return View();  
         }
 
         // GET: Register/Details/5
