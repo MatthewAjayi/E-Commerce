@@ -124,6 +124,7 @@
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\ProductsController.cs" />
     <Compile Include="Controllers\RegisterController.cs" />
     <Compile Include="DAL\EStoreDBContext.cs" />
     <Compile Include="Global.asax.cs">
@@ -204,6 +205,12 @@
     <Content Include="Views\Admin\GetInventory.cshtml" />
     <Content Include="Views\Admin\Inventory.cshtml" />
     <Content Include="Views\Admin\UpdateInventory.cshtml" />
+    <Content Include="Views\Shared\_Layout3.cshtml" />
+    <Content Include="Views\Products\AllProducts.cshtml" />
+    <Content Include="Views\Shared\_CategoryDropdown.cshtml" />
+    <Content Include="Views\Products\ProductsByCategory.cshtml" />
+    <Content Include="Views\Shared\_Layout4.cshtml" />
+    <Content Include="Views\Products\NonUser.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

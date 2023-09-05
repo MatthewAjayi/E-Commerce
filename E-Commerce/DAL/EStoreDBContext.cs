@@ -401,6 +401,35 @@ namespace E_Commerce.DAL
                     return rowsAffected;
                 }
             }
+
+            public static List<Products> GetProductsByCategory(int categoryId)
+            {
+                SqlConnection sqlCon = null;
+                List<Products> productList = new List<Products>();
+                using (sqlCon = new SqlConnection(connectionString))
+                {
+                    sqlCon.Open();
+                    SqlCommand Cmnd = new SqlCommand("SELECT * FROM dbo.Products where CategoryID = @CategoryID", sqlCon);
+                    Cmnd.Parameters.AddWithValue("@CategoryID", categoryId);
+
+                    Cmnd.CommandType = System.Data.CommandType.Text;
+                    SqlDataReader rdr = Cmnd.ExecuteReader();
+                    while (rdr.Read())
+                    {
+                        Products products = new Products();
+                        products.CategoryID = Convert.ToInt32(rdr["CategoryID"]);
+                        products.ProductName = Convert.ToString(rdr["ProductName"]);
+                        products.ProductDescription = Convert.ToString(rdr["ProductDescription"]);
+                        products.ProductID = Convert.ToInt32(rdr["ProductID"]);
+                        products.Category = GetCategoryName(Convert.ToInt32(rdr["CategoryID"]));
+                        productList.Add(products);
+                    }
+
+                    sqlCon.Close();
+                }
+
+                return productList;
+            }
         }
     }
 }

@@ -1,0 +1,20 @@
+﻿@model IEnumerable<E_Commerce.Models.Category>
+
+@{
+    ViewBag.Title = "AllProducts";
+    Layout = "~/Views/Shared/_Layout3.cshtml";
+}
+
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="categoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Categories
+    </button>
+    <div class="dropdown-menu" aria-labelledby="categoryDropdown">
+        @foreach (var item in Model)
+        {
+            //@Html.DisplayFor(modelItem => item.CategoryName)
+            <a class="dropdown-item" href="@Url.Action("ProductsByCategory", "Products", new { id =  item.CategoryName })">@item.CategoryName</a>
+        }
+    </div>
+</div>
+

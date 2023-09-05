@@ -12,29 +12,9 @@ namespace E_Commerce.Controllers
     {
         public ActionResult Index()
         {
-            var listCustomers = GetCustomers();
-            return View(listCustomers);
-        }
-
-        public List<Customer> GetCustomers()
-        {
-            List<Customer> listCustomers = EStoreDBContext.EStoreDB.GetCustomers();
-
-            return listCustomers;
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
+            //var listCustomers = GetCustomers();
             return View();
         }
 
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
-        }
     }
 }
